@@ -1,10 +1,5 @@
 const puppeteer = require('puppeteer');
 
-// // print();
-// console.log("123")
-// console.log()
-
-// ——————————————————————
 // Открытие сайта:
 // https://betboom.ru/sport/football
 
@@ -15,6 +10,13 @@ function sleep(ms) {
 // Массив, в котором будут хранится все отсканированные ставки
 let resultAllBetsArray = [];
 
+
+
+
+
+//
+// 1 Открывает браузер, и ждёт загрузки страницы
+//
 
 (async () => {
   // Запускаем браузер с указанными размерами окна
@@ -84,7 +86,13 @@ let resultAllBetsArray = [];
   let parentElement;
 
 
-  // Нажатие на каждый элемент и ожидание загрузки элемента с классом 'Ur2bE-a84e8c10'
+
+
+
+  //
+  // 2 Раскрывает списки
+  //
+  
   for (const element of elements_arrow_down) {
     
     // Выполняем код по раскрытию списков, для всех свёрнутых элементов, за исключением первого,
@@ -119,8 +127,6 @@ let resultAllBetsArray = [];
         }, { timeout: 5000 }, parentElement);
 
         // console.log("Внутренние элементы корректно загрузились");
-      } else {
-        // console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
       }
 
       await element.evaluate(el => {
@@ -138,8 +144,11 @@ let resultAllBetsArray = [];
 
 
 
-    // Идём по каждой ставке в списке
+    //
+    // 3 Проходит по каждой ставке в списке
+    //
 
+    // И сохраняет информацию в массивы
     const childDivs = await parentElement.$$('.Ur2bE-a84e8c10');
 
     console.log("Получили все ставки в этом списке. length = " + childDivs.length);
@@ -186,6 +195,10 @@ let resultAllBetsArray = [];
 
     arrCounterArrDown++;
   }
+
+  //
+  // _ Выводит полученный массив 
+  //
 
   console.log("resultAllBetsArray: ");
   console.log(resultAllBetsArray);
