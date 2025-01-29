@@ -47,22 +47,16 @@ function sleep(ms) {
   // Открываем указанную страницу и ждем полной загрузки
   await page.goto('https://betboom.ru/sport/football', { waitUntil: 'load' });
 
-  // // Ожидание 5 секунд
-  // await sleep(5000);
-
-  // // После полной загрузки страницы выводим сообщение в консоль
-  // console.log('Страница полностью загружена!');
-
-  // // Нажатие на первый элемент с классом 'h4qas-a84e8c10'
-  // await page.click('.h4qas-a84e8c10');
-
 
 
   // Ожидание загрузки элемента 
   await page.waitForSelector('button.zcABw-a84e8c10.mXIwY-a84e8c10');
 
-  console.log("Ждём 5 секунд");
-  await sleep(5000); // Ждём 5 секунд ////////////////////////////// Здесь нужно ждать загрузки элементов, а не 5 секунд
+  // console.log("Ждём 5 секунд");
+  // await sleep(5000); // Ждём 5 секунд 
+
+  await page.waitForSelector('.Ur2bE-a84e8c10');
+  console.log("Хотя бы один нужный элемент загрузился");
 
   // Поиск и клик по кнопке с текстом "1д"
   await page.evaluate(() => {
@@ -92,6 +86,9 @@ function sleep(ms) {
       arrCounterArrDown++;
       continue;
     }
+
+    if(arrCounterArrDown > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
+    
     await element.evaluate(el => {
       el.scrollIntoView();
       el.style.border = '2px solid red'; // Добавляем красную рамку
@@ -101,7 +98,7 @@ function sleep(ms) {
       el.scrollIntoView();
       window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
     });
-    console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
+    // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
 
 
     // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
@@ -111,37 +108,85 @@ function sleep(ms) {
 
     if (parentElement) {
       await element.click();
-      console.log("Нажали на элемент раскрытия списка");
+      // console.log("Нажали на элемент раскрытия списка");
 
       // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
       await page.waitForFunction(parent => {
         return parent.querySelector('.Ur2bE-a84e8c10') !== null;
       }, { timeout: 5000 }, parentElement);
 
-      console.log("Внутренние элементы корректно загрузились");
+      // console.log("Внутренние элементы корректно загрузились");
     } else {
-      console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
+      // console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
     }
-
-
-
-
-    // console.log("Подождали, пока загрузятся внутренние элементы");
-
-    // await sleep(500); // Ждём 5 секунд
-    // console.log("Ждём 0,5 секунд");
 
     await element.evaluate(el => {
       el.style.border = ''; // Удаляем красную рамку
     });
 
+    console.log("Раскрытие списка №" + arrCounterArrDown + " корректно");
+
+
+
+
+
+
+    // Идём по каждой ставке в списке
+
+    let resultAllBetsArray = [];
+
+    const childDivs = await parentElement.$$('.Ur2bE-a84e8c10');
+
+    console.log("Получили все ставки в этом списке. length = " + childDivs.length);
+  
+    for (const div of childDivs) {
+      let info = [];
+
+      // Извлекаем первый элемент span с классом rzys6-a84e8c10
+      const spans = await div.$$('.rzys6-a84e8c10');
+      if (spans.length > 0) {
+        const span1Text = await page.evaluate(element => element.textContent, spans[0]);
+        info.push(span1Text);
+      } else {
+        info.push(null);
+      }
+
+      // Извлекаем второй элемент span с классом rzys6-a84e8c10
+      if (spans.length > 1) {
+        const span2Text = await page.evaluate(element => element.textContent, spans[1]);
+        info.push(span2Text);
+      } else {
+        info.push(null);
+      }
+  
+      // Извлекаем элемент time с классом dHlnp-a84e8c10
+      const timeElement = await div.$('.dHlnp-a84e8c10');
+      const timeText = await page.evaluate(element => element.textContent, timeElement);
+      info.push(timeText);
+
+      // Извлекаем элементы span с классом do7iP-a84e8c10
+      const span3 = await div.$$('.do7iP-a84e8c10');
+      for (let i = 0; i < 3; i++) {
+        const spanText = await page.evaluate(element => element.textContent, span3[i]);
+        info.push(spanText);
+      }
+
+      console.log("info:");
+      console.log(info);
+  
+      resultAllBetsArray.push(info);
+    }
+  
+    
+    console.log("resultAllBetsArray:");
+    console.log(resultAllBetsArray);
+
+    break; ////////////////////////////////////////////////////
+
     arrCounterArrDown++;
   }
 
 })();
-
-
-
 
 
 
