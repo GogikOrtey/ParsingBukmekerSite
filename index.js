@@ -78,32 +78,44 @@ function sleep(ms) {
   // Получение всех элементов с классом 'h4qas-a84e8c10'
   const elements_arrow_down = await page.$$('.h4qas-a84e8c10');
 
+  let arrCounterArrDown = 1;
+
+
+
   // Нажатие на каждый элемент и ожидание загрузки элемента с классом 'Ur2bE-a84e8c10'
   for (const element of elements_arrow_down) {
-    await element.evaluate(el => el.scrollIntoView());
+    if(arrCounterArrDown == 1) {
+      arrCounterArrDown++;
+      continue;
+    }
+    await element.evaluate(el => {
+      el.scrollIntoView();
+      el.style.border = '2px solid red'; // Добавляем красную рамку
+    });
+    
+    // await element.evaluate(el => el.scrollIntoView());
+    // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);
+
+    await element.evaluate(el => {
+      el.scrollIntoView();
+      window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
+    });
+    console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
+
     await element.click();
     console.log("Нажали на элемент раскрытия списка");
-    await page.waitForSelector('.A7vA9-a84e8c10 .Ur2bE-a84e8c10', { timeout: 5000 });
-    await sleep(10000); // Ждём 10 секунд
+    // await page.waitForSelector('.A7vA9-a84e8c10 .Ur2bE-a84e8c10', { timeout: 5000 });
+
+    await sleep(5000); // Ждём 5 секунд
+    console.log("Ждём 5 секунд");
+
+    await element.evaluate(el => {
+      el.style.border = ''; // Удаляем красную рамку
+    });
+
+    arrCounterArrDown++;
   }
 
-  // // Нажатие на каждый элемент
-  // for (const element of elements_arrow_down) {
-  //   await element.evaluate(el => el.scrollIntoView());
-  //   await element.click();
-  // }
-
-  // <div class="Ur2bE-a84e8c10">
-
-
-
-  // Повторное нажатие на первый элемент
-  if (elements_arrow_down.length > 0) {
-    const firstElement = elements_arrow_down[0];
-    await firstElement.evaluate(el => el.scrollIntoView());
-    await firstElement.click();
-    console.log("Нажали на первый элемент раскрытия списка");
-  }
 })();
 
 
