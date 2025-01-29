@@ -60,6 +60,9 @@ function sleep(ms) {
   // Ожидание загрузки элемента 
   await page.waitForSelector('button.zcABw-a84e8c10.mXIwY-a84e8c10');
 
+  console.log("Ждём 5 секунд");
+  await sleep(5000); // Ждём 5 секунд
+
   // Поиск и клик по кнопке с текстом "1д"
   await page.evaluate(() => {
     const buttons = Array.from(document.querySelectorAll('button.zcABw-a84e8c10.mXIwY-a84e8c10'));
@@ -102,12 +105,35 @@ function sleep(ms) {
     });
     console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
 
-    await element.click();
-    console.log("Нажали на элемент раскрытия списка");
-    // await page.waitForSelector('.A7vA9-a84e8c10 .Ur2bE-a84e8c10', { timeout: 5000 });
 
-    await sleep(5000); // Ждём 5 секунд
-    console.log("Ждём 5 секунд");
+    const parentElement = await page.evaluate(el => {
+      const parent = el.closest('.A7vA9-a84e8c10');
+      return parent ? parent.outerHTML : null;
+    }, element);
+
+    if (parentElement) {
+      await element.click();
+      console.log("Нажали на элемент раскрытия списка");
+
+      // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
+      await page.waitForFunction((parentHTML) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = parentHTML;
+        const parent = tempDiv.firstChild;
+        return parent.querySelector('.Ur2bE-a84e8c10') !== null;
+      }, { timeout: 50000 }, parentElement);
+
+      console.log("Внутренние элементы корректно загрузились");
+    } else {
+      console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
+    }
+
+
+
+    // console.log("Подождали, пока загрузятся внутренние элементы");
+
+    // await sleep(500); // Ждём 5 секунд
+    // console.log("Ждём 0,5 секунд");
 
     await element.evaluate(el => {
       el.style.border = ''; // Удаляем красную рамку
