@@ -1,4 +1,6 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const xlsx = require('xlsx');
 
 // Открытие сайта:
 // https://betboom.ru/sport/football
@@ -196,12 +198,74 @@ let resultAllBetsArray = [];
     arrCounterArrDown++;
   }
 
+
+
   //
-  // _ Выводит полученный массив 
+  // Выводит полученный массив 
   //
 
   console.log("resultAllBetsArray: ");
   console.log(resultAllBetsArray);
+
+
+
+  //
+  // Здесь добавить обработчик даты
+  //
+
+  // Что бы в итоге получилось сначала 4 столбца с датой - 
+  // в текстовом виде, текуща дата, преобразованная в формат даты и
+  // сколько осталось до матча (в часах)
+
+
+  // Тогда сосредоточится на лиге УЕФА - добавить парсер на один или сразу 2 сайта с таблицей результатов
+
+  // Также добавить ссылку на ставку, что бы можно было посмотреть результаты
+
+  // И узнать, сколько по времени длится один матч (и сколько у него частей)
+
+
+  //
+  // Сохраняет полученные данные в текстовый файл
+  //
+
+  // Преобразуем массив в строку с форматированием
+  const dataString = resultAllBetsArray.map(arr => arr.join(',')).join('\n');
+
+  // Записываем в файл
+  fs.writeFile('resultAllBetsArray.txt', dataString, 'utf8', (err) => {
+    if (err) {
+      console.error('Ошибка при записи в файл', err);
+    } else {
+      console.log('Данные успешно записаны в файл');
+    }
+  });
+
+
+
+  //
+  // Сохраняет данные в формате таблицы Excel
+  //
+
+  // Создаем новую книгу и лист
+  const workbook = xlsx.utils.book_new();
+  const worksheet = xlsx.utils.aoa_to_sheet([]);
+
+  // Записываем данные в лист, начиная с 3-й строки и 2-го столбца
+  resultAllBetsArray.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      xlsx.utils.sheet_add_aoa(worksheet, [[cell]], { origin: { r: rowIndex + 2, c: colIndex + 1 } });
+    });
+  });
+
+  // Добавляем лист в книгу
+  xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+  // Записываем книгу в файл
+  xlsx.writeFile(workbook, 'resultAllBetsArray.xlsx');
+
+  console.log('Данные успешно записаны в Excel файл');
+
 
 })();
 
