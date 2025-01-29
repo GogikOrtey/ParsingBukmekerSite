@@ -12,6 +12,9 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Массив, в котором будут хранится все отсканированные ставки
+let resultAllBetsArray = [];
+
 
 (async () => {
   // Запускаем браузер с указанными размерами окна
@@ -78,62 +81,64 @@ function sleep(ms) {
 
   let arrCounterArrDown = 1;
 
+  let parentElement;
 
 
   // Нажатие на каждый элемент и ожидание загрузки элемента с классом 'Ur2bE-a84e8c10'
   for (const element of elements_arrow_down) {
-    if(arrCounterArrDown == 1) {
-      arrCounterArrDown++;
-      continue;
-    }
-
-    if(arrCounterArrDown > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
     
-    await element.evaluate(el => {
-      el.scrollIntoView();
-      el.style.border = '2px solid red'; // Добавляем красную рамку
-    });
+    // Выполняем код по раскрытию списков, для всех свёрнутых элементов, за исключением первого,
+    // т.к. первый уже раскрыт
+    if (arrCounterArrDown > 1) {
+      if (arrCounterArrDown > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
 
-    await element.evaluate(el => {
-      el.scrollIntoView();
-      window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
-    });
-    // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
+      await element.evaluate(el => {
+        el.scrollIntoView();
+        el.style.border = '2px solid red'; // Добавляем красную рамку
+      });
+
+      await element.evaluate(el => {
+        el.scrollIntoView();
+        window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
+      });
+      // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
 
 
-    // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
-    const parentElement = await element.evaluateHandle(el => {
-      return el.closest('.A7vA9-a84e8c10');
-    });
+      // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
+      parentElement = await element.evaluateHandle(el => {
+        return el.closest('.A7vA9-a84e8c10');
+      });
 
-    if (parentElement) {
-      await element.click();
-      // console.log("Нажали на элемент раскрытия списка");
+      if (parentElement) {
+        await element.click();
+        // console.log("Нажали на элемент раскрытия списка");
 
-      // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
-      await page.waitForFunction(parent => {
-        return parent.querySelector('.Ur2bE-a84e8c10') !== null;
-      }, { timeout: 5000 }, parentElement);
+        // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
+        await page.waitForFunction(parent => {
+          return parent.querySelector('.Ur2bE-a84e8c10') !== null;
+        }, { timeout: 5000 }, parentElement);
 
-      // console.log("Внутренние элементы корректно загрузились");
-    } else {
-      // console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
+        // console.log("Внутренние элементы корректно загрузились");
+      } else {
+        // console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
+      }
+
+      await element.evaluate(el => {
+        el.style.border = ''; // Удаляем красную рамку
+      });
+
+      console.log("Раскрытие списка №" + arrCounterArrDown + " корректно");
     }
-
-    await element.evaluate(el => {
-      el.style.border = ''; // Удаляем красную рамку
-    });
-
-    console.log("Раскрытие списка №" + arrCounterArrDown + " корректно");
-
+    else {
+      // Получение первого элемента с классом .A7vA9-a84e8c10
+      parentElement = await page.$('.A7vA9-a84e8c10');
+    }
 
 
 
 
 
     // Идём по каждой ставке в списке
-
-    let resultAllBetsArray = [];
 
     const childDivs = await parentElement.$$('.Ur2bE-a84e8c10');
 
@@ -171,20 +176,19 @@ function sleep(ms) {
         info.push(spanText);
       }
 
-      console.log("info:");
-      console.log(info);
+      // console.log("info:");
+      // console.log(info);
   
       resultAllBetsArray.push(info);
     }
-  
-    
-    console.log("resultAllBetsArray:");
-    console.log(resultAllBetsArray);
 
-    break; ////////////////////////////////////////////////////
+    break; //////////////////////////////////////////////////// Этот код обработает только первый раскрытый список
 
     arrCounterArrDown++;
   }
+
+  console.log("resultAllBetsArray: ");
+  console.log(resultAllBetsArray);
 
 })();
 
