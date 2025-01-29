@@ -39,7 +39,8 @@ function sleep(ms) {
 
   page.on('console', msg => {
     if (msg.type() === 'log') {
-      console.log(`Браузер говорит: ${msg.text()}`);
+      if(msg.text() != "%c color:")
+        console.log(`Браузер говорит: ${msg.text()}`);
     }
   });
 
@@ -61,7 +62,7 @@ function sleep(ms) {
   await page.waitForSelector('button.zcABw-a84e8c10.mXIwY-a84e8c10');
 
   console.log("Ждём 5 секунд");
-  await sleep(5000); // Ждём 5 секунд
+  await sleep(5000); // Ждём 5 секунд ////////////////////////////// Здесь нужно ждать загрузки элементов, а не 5 секунд
 
   // Поиск и клик по кнопке с текстом "1д"
   await page.evaluate(() => {
@@ -95,9 +96,6 @@ function sleep(ms) {
       el.scrollIntoView();
       el.style.border = '2px solid red'; // Добавляем красную рамку
     });
-    
-    // await element.evaluate(el => el.scrollIntoView());
-    // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);
 
     await element.evaluate(el => {
       el.scrollIntoView();
@@ -106,27 +104,25 @@ function sleep(ms) {
     console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
 
 
-    const parentElement = await page.evaluate(el => {
-      const parent = el.closest('.A7vA9-a84e8c10');
-      return parent ? parent.outerHTML : null;
-    }, element);
+    // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
+    const parentElement = await element.evaluateHandle(el => {
+      return el.closest('.A7vA9-a84e8c10');
+    });
 
     if (parentElement) {
       await element.click();
       console.log("Нажали на элемент раскрытия списка");
 
       // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
-      await page.waitForFunction((parentHTML) => {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = parentHTML;
-        const parent = tempDiv.firstChild;
+      await page.waitForFunction(parent => {
         return parent.querySelector('.Ur2bE-a84e8c10') !== null;
-      }, { timeout: 50000 }, parentElement);
+      }, { timeout: 5000 }, parentElement);
 
       console.log("Внутренние элементы корректно загрузились");
     } else {
       console.log("Не удалось найти родительский элемент с классом .A7vA9-a84e8c10 до клика");
     }
+
 
 
 
