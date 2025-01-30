@@ -227,12 +227,12 @@ let resultAllBetsArray = [];
 
 
 
-  //
-  // Выводит полученный массив 
-  //
+  // //
+  // // Выводит полученный массив 
+  // //
 
-  console.log("resultAllBetsArray: ");
-  console.log(resultAllBetsArray);
+  // console.log("resultAllBetsArray: ");
+  // console.log(resultAllBetsArray);
 
 
 
@@ -270,14 +270,34 @@ let resultAllBetsArray = [];
   
   // Входное время лежит в inputStringDatabet
   
-  let currentDate = moment().format('DD-MM-YYYY HH:mm');
-  let processingDataBet = parseEventDate(inputStringDatabet);
-  let hoursWidthVet = hoursUntilEvent(processingDataBet);
+  // let currentDate = moment().format('DD-MM-YYYY HH:mm');
+  // let processingDataBet = parseEventDate(inputStringDatabet);
+  // let hoursWidthVet = hoursUntilEvent(processingDataBet);
   
-  console.log("🕑 Входная строка времени: " + inputStringDatabet);
-  console.log("🕑 Текущая дата и время: " + currentDate);
-  console.log("🕑 Обработанное время ставки: " + processingDataBet.format('DD-MM-YYYY HH:mm'));
-  console.log("🕑 Часов до события: " + hoursWidthVet.toFixed(2));
+  // console.log("Входная строка времени: " + inputStringDatabet);
+  // console.log("Текущая дата и время: " + currentDate);
+  // console.log("Обработанное время ставки: " + processingDataBet.format('DD-MM-YYYY HH:mm'));
+  // console.log("Часов до события: " + hoursWidthVet.toFixed(2));
+
+
+  for (let i = 0; i < resultAllBetsArray.length; i++) {
+    let cur_inputStringDatabet = resultAllBetsArray[i][2];
+
+    let currentDate = moment().format('DD-MM-YYYY HH:mm');
+    let processingDataBet = parseEventDate(cur_inputStringDatabet);
+    let hoursWidthVet = hoursUntilEvent(processingDataBet);
+
+    resultAllBetsArray[i].push(currentDate)
+    resultAllBetsArray[i].push(processingDataBet.format('DD-MM-YYYY HH:mm'))
+    resultAllBetsArray[i].push(hoursWidthVet.toFixed(2))
+  }
+
+
+
+
+
+
+
   
 
 
@@ -336,6 +356,16 @@ let resultAllBetsArray = [];
   xlsx.writeFile(workbook, 'resultAllBetsArray.xlsx');
 
   console.log('Данные успешно записаны в Excel файл');
+
+
+
+
+  //
+  // Выводит полученный массив 
+  //
+
+  console.log("resultAllBetsArray: ");
+  console.log(resultAllBetsArray);
 
 
 })();
