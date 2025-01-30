@@ -120,6 +120,7 @@ let resultAllBetsArray = [];
   //
 
   let inputStringDatabet;
+  let childDivs;
   
   for (const element of elements_arrow_down) {
     
@@ -177,7 +178,7 @@ let resultAllBetsArray = [];
     //
 
     // И сохраняет информацию в массивы
-    const childDivs = await parentElement.$$('[class^="Ur2bE"]');
+    childDivs = await parentElement.$$('[class^="Ur2bE"]');
 
     console.log("Получили все ставки в этом списке. length = " + childDivs.length);
   
@@ -303,14 +304,76 @@ let resultAllBetsArray = [];
     for(let j = 3; j < 6; j++) {
       resultAllBetsArray[i][j] = resultAllBetsArray[i][j].replace(".", ",")
     }
-    resultAllBetsArray[i][8] = resultAllBetsArray[i][j].replace(".", ",")
+    resultAllBetsArray[i][8] = resultAllBetsArray[i][8].replace(".", ",")
   }
 
 
 
   //
-  //  
+  // Вытаскивает ссылку на событие, из каждой ставки
   //
+
+  console.log("Начинаем парсинг ссылок событий")
+
+  // // Установка слушателя событий для клика мыши
+  // await page.exposeFunction('onElementClicked', (className) => {
+  //   console.log('Clicked element class:', className);
+  // });
+
+  // await page.evaluate(() => {
+  //   document.addEventListener('click', (event) => {
+  //     const element = event.target;
+  //     const className = element.getAttribute('class') || 'No class attribute';
+  //     window.onElementClicked(className);
+  //   });
+  // });
+
+  // console.log('Жду клика на элемент...');
+
+  // // // Ожидание какого-то времени для взаимодействия пользователя
+  // // await page.waitForTimeout(300000); // ждем 5 минут, можно изменить на необходимое время
+
+  // await sleep(5000); // Ждём 5 секунд 
+
+
+  for (let i = 0; i < childDivs.length; i++) {
+    // Получение кнопки внутри текущего элемента
+    const button = await childDivs[i].$('div[class^="xLmig"]');
+    // const button = await childDivs[i].$('div[class^="Uodqj"]');
+
+    if (button) {
+      // Получение размера и положения элемента
+      const boundingBox = await button.boundingBox();
+
+      if (boundingBox) {
+        // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
+        const clickX = boundingBox.x + 100;
+        const clickY = boundingBox.y + (boundingBox.height / 2);
+
+        // Сохраняем текущий URL страницы
+        const currentURL = page.url();
+
+        // Выполнение клика по вычисленным координатам
+        await page.mouse.click(clickX, clickY);
+
+        // Ожидание изменения URL
+        await page.waitForFunction(`window.location.href !== '${currentURL}'`);
+
+        // Добавление текущего URL в массив результатов
+        resultAllBetsArray[i].push(page.url());
+
+        // console.log("444");
+
+        // Возврат на исходную страницу
+        await page.goBack();
+
+        console.log("Ждём 5 секунд");
+        await sleep(5000); // Ждём 5 секунд 
+        break;
+      }
+    }
+  }
+
 
 
 
