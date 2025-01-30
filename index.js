@@ -15,6 +15,34 @@ function sleep(ms) {
 let resultAllBetsArray = [];
 
 
+const { exec } = require('child_process');
+
+// Функция для отключения интернета
+function disableInternet() {
+    exec('netsh advfirewall firewall add rule name="Block Internet" dir=out action=block protocol=TCP', (error) => {
+        if (error) {
+            console.error(`Error disabling internet: ${error}`);
+        } else {
+            console.log('Internet connection disabled.');
+        }
+    });
+}
+
+// Функция для включения интернета
+function enableInternet() {
+    exec('netsh advfirewall firewall delete rule name="Block Internet"', (error) => {
+        if (error) {
+            console.error(`Error enabling internet: ${error}`);
+        } else {
+            console.log('Internet connection enabled.');
+        }
+    });
+}
+
+// enableInternet();
+
+
+
 
 
 
@@ -313,45 +341,22 @@ let resultAllBetsArray = [];
   // Вытаскивает ссылку на событие, из каждой ставки
   //
 
+  // Выключает интернет
+  // disableInternet();
+
+  console.log("🔴🔴🔴 Отключай интернет!");
+  await sleep(2500);
+
+
+
+
+
+  // Здесь также нужно вытащить сначала название лиги
+
+  
   
 
-  // // Установка слушателя событий для клика мыши
-  // await page.exposeFunction('onElementClicked', (className) => {
-  //   console.log('Clicked element class:', className);
-  // });
-
-  // await page.evaluate(() => {
-  //   document.addEventListener('click', (event) => {
-  //     const element = event.target;
-  //     const className = element.getAttribute('class') || 'No class attribute';
-  //     window.onElementClicked(className);
-  //   });
-  // });
-
-  // console.log('Жду клика на элемент...');
-
-  // // // Ожидание какого-то времени для взаимодействия пользователя
-  // // await page.waitForTimeout(300000); // ждем 5 минут, можно изменить на необходимое время
-
-  // await sleep(5000); // Ждём 5 секунд 
-
-
-
-
-  // !@
-  // Отключаю подключение к интернету во внутреннем браузере
-  console.log("Отключаю подключение к интернету во внутреннем браузере");
-  await page.setRequestInterception(true);
-  page.on('request', interceptedRequest => {
-    // Отклоните все запросы
-    interceptedRequest.abort();
-  });
-
-
-
   console.log("Начинаем парсинг ссылок событий")
-
-  // console.log("childDivs.length = " + childDivs.length);
 
   let massChildDivsLength = childDivs.length;
 
@@ -362,9 +367,16 @@ let resultAllBetsArray = [];
 
     // Получение кнопки внутри текущего элемента
     const button = await childDivs[i].$('div[class^="xLmig"]');
-    // const button = await childDivs[i].$('div[class^="Uodqj"]');
+
+    // // Прокрутка до этого элемента
+    // button.scrollIntoView(); 
 
     if (button) {
+      // Прокрутка к элементу
+      await page.evaluate(element => {
+        element.scrollIntoView({ block: 'center' });
+      }, button);
+
       // Получение размера и положения элемента
       const boundingBox = await button.boundingBox();
 
@@ -387,29 +399,43 @@ let resultAllBetsArray = [];
 
         console.log("Сохранили URL " + (i+1) + "й страницы")
 
-        await sleep(2000); ////////////////// для отладки
+        // await sleep(5000); ////////////////// для отладки
+
+        await sleep(300);
 
         // Возврат на исходную страницу
         await page.goBack();
 
-        // console.log("Ждём 5 секунд");
-        // await sleep(50); // Ждём 5 секунд 
-        // break;
-
-        // console.log("childDivs:");
-        // console.log(childDivs);
+        await sleep(300);
       }
     }
   }
 
 
 
-  // !@
-  // Восстанавливаю подключение к интернету во внутреннем браузере
-  console.log("Восстанавливаю подключение к интернету во внутреннем браузере");
-  await page.setRequestInterception(false);
-  page.removeAllListeners('request');
+  console.log("> Включай интернет!");
+  // await sleep(2500);
 
+
+  // Включает интернет
+  // enableInternet();
+
+
+  // // Включаю интернет-соединение
+  // // Для Windows
+  // exec('netsh interface set interface "Ethernet" admin=enable', (err, stdout, stderr) => {
+  //   if (err) {
+  //     console.error(`Ошибка включения интернета: ${stderr}`);
+  //     return;
+  //   }
+  //   console.log("Интернет включён");
+  // });
+
+  // // !@
+  // // Восстанавливаю подключение к интернету во внутреннем браузере
+  // console.log("Восстанавливаю подключение к интернету во внутреннем браузере");
+  // await page.setRequestInterception(false);
+  // page.removeAllListeners('request');
 
 
 
