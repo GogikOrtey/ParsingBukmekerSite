@@ -1,6 +1,8 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const xlsx = require('xlsx');
+const moment = require('moment');
+
 
 // Открытие сайта:
 // https://betboom.ru/sport/football
@@ -54,20 +56,23 @@ let resultAllBetsArray = [];
   // Открываем указанную страницу и ждем полной загрузки
   await page.goto('https://betboom.ru/sport/football', { waitUntil: 'load' });
 
+  console.log("Запуск программы")
+
 
 
   // Ожидание загрузки элемента 
-  await page.waitForSelector('button.zcABw-a84e8c10.mXIwY-a84e8c10');
+  // await page.waitForSelector('button.zcABw-a84e8c10.mXIwY-a84e8c10');
+  await page.waitForSelector('[class^="zcABw"]');
 
   // console.log("Ждём 5 секунд");
   // await sleep(5000); // Ждём 5 секунд 
 
-  await page.waitForSelector('.Ur2bE-a84e8c10');
+  await page.waitForSelector('[class^="Ur2bE"]');
   console.log("Хотя бы один нужный элемент загрузился");
 
   // Поиск и клик по кнопке с текстом "1д"
   await page.evaluate(() => {
-    const buttons = Array.from(document.querySelectorAll('button.zcABw-a84e8c10.mXIwY-a84e8c10'));
+    const buttons = Array.from(document.querySelectorAll('[class^="zcABw"]'));
     const targetButton = buttons.find(button => button.textContent === '1д');
     if (targetButton) {
       targetButton.click();
@@ -78,10 +83,10 @@ let resultAllBetsArray = [];
 
 
   // Ожидание загрузки элементов с классом 'h4qas-a84e8c10'
-  await page.waitForSelector('.h4qas-a84e8c10');
+  await page.waitForSelector('[class^="h4qas"]');
 
   // Получение всех элементов с классом 'h4qas-a84e8c10'
-  const elements_arrow_down = await page.$$('.h4qas-a84e8c10');
+  const elements_arrow_down = await page.$$('[class^="h4qas"]');
 
   let arrCounterArrDown = 1;
 
@@ -94,13 +99,15 @@ let resultAllBetsArray = [];
   //
   // 2 Раскрывает списки
   //
+
+  let inputStringDatabet;
   
   for (const element of elements_arrow_down) {
     
     // Выполняем код по раскрытию списков, для всех свёрнутых элементов, за исключением первого,
     // т.к. первый уже раскрыт
     if (arrCounterArrDown > 1) {
-      if (arrCounterArrDown > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
+      // if (arrCounterArrDown > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
 
       await element.evaluate(el => {
         el.scrollIntoView();
@@ -116,7 +123,7 @@ let resultAllBetsArray = [];
 
       // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
       parentElement = await element.evaluateHandle(el => {
-        return el.closest('.A7vA9-a84e8c10');
+        return el.closest('[class^="A7vA9"]');
       });
 
       if (parentElement) {
@@ -125,7 +132,7 @@ let resultAllBetsArray = [];
 
         // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
         await page.waitForFunction(parent => {
-          return parent.querySelector('.Ur2bE-a84e8c10') !== null;
+          return parent.querySelector('[class^="Ur2bE"]') !== null;
         }, { timeout: 5000 }, parentElement);
 
         // console.log("Внутренние элементы корректно загрузились");
@@ -139,7 +146,7 @@ let resultAllBetsArray = [];
     }
     else {
       // Получение первого элемента с классом .A7vA9-a84e8c10
-      parentElement = await page.$('.A7vA9-a84e8c10');
+      parentElement = await page.$('[class^="A7vA9"]');
     }
 
 
@@ -151,7 +158,7 @@ let resultAllBetsArray = [];
     //
 
     // И сохраняет информацию в массивы
-    const childDivs = await parentElement.$$('.Ur2bE-a84e8c10');
+    const childDivs = await parentElement.$$('[class^="Ur2bE"]');
 
     console.log("Получили все ставки в этом списке. length = " + childDivs.length);
   
@@ -159,7 +166,7 @@ let resultAllBetsArray = [];
       let info = [];
 
       // Извлекаем первый элемент span с классом rzys6-a84e8c10
-      const spans = await div.$$('.rzys6-a84e8c10');
+      const spans = await div.$$('[class^="rzys6"]');
       if (spans.length > 0) {
         const span1Text = await page.evaluate(element => element.textContent, spans[0]);
         info.push(span1Text);
@@ -176,12 +183,13 @@ let resultAllBetsArray = [];
       }
   
       // Извлекаем элемент time с классом dHlnp-a84e8c10
-      const timeElement = await div.$('.dHlnp-a84e8c10');
+      const timeElement = await div.$('[class^="dHlnp"]');
       const timeText = await page.evaluate(element => element.textContent, timeElement);
       info.push(timeText);
+      inputStringDatabet = timeText;
 
       // Извлекаем элементы span с классом do7iP-a84e8c10
-      const span3 = await div.$$('.do7iP-a84e8c10');
+      const span3 = await div.$$('[class^="do7iP"]');
       for (let i = 0; i < 3; i++) {
         const spanText = await page.evaluate(element => element.textContent, span3[i]);
         info.push(spanText);
@@ -210,10 +218,52 @@ let resultAllBetsArray = [];
 
 
   //
-  // Здесь добавить обработчик даты
+  // Обработчик даты
   //
 
-  // Что бы в итоге получилось сначала 4 столбца с датой - 
+  function parseEventDate(eventString) {
+    const now = moment();
+    let eventDate;
+
+    if (eventString.startsWith('Сегодня')) {
+      eventDate = moment(now.format('YYYY-MM-DD') + ' ' + eventString.split(' ')[1], 'YYYY-MM-DD HH:mm');
+    } else if (eventString.startsWith('Завтра')) {
+      eventDate = moment(now.add(1, 'days').format('YYYY-MM-DD') + ' ' + eventString.split(' ')[1], 'YYYY-MM-DD HH:mm');
+    }
+
+    return eventDate;
+  }
+
+  function hoursUntilEvent(eventDate) {
+    const now = moment();
+    return eventDate.diff(now, 'hours', true);
+  }
+
+  // Входное время лежит в inputStringDatabet
+
+  let currentDate = moment().format('YYYY-MM-DD HH:mm');
+  let processingDataBet = parseEventDate(inputStringDatabet);
+  let hoursWidthVet = hoursUntilEvent(processingDataBet);
+
+  console.log("🕑 Входная строка времени: " + inputStringDatabet);
+  console.log("🕑 Текущая дата и время: " + currentDate);
+  console.log("🕑 Обработанное время ставки: " + processingDataBet.format('YYYY-MM-DD HH:mm'));
+  console.log("🕑 Часов до события: " + hoursWidthVet.toFixed(2));
+
+  // const eventStringToday = 'Сегодня в 05:30';
+  // const eventStringTomorrow = 'Завтра в 01:00';
+
+  // const eventDateToday = parseEventDate(eventStringToday);
+  // const eventDateTomorrow = parseEventDate(eventStringTomorrow);
+
+  // console.log('Точная дата события "Сегодня в 05:30":', eventDateToday.format('YYYY-MM-DD HH:mm'));
+  // console.log('Часов до события "Сегодня в 05:30":', hoursUntilEvent(eventDateToday));
+
+  // console.log('Точная дата события "Завтра в 01:00":', eventDateTomorrow.format('YYYY-MM-DD HH:mm'));
+  // console.log('Часов до события "Завтра в 01:00":', hoursUntilEvent(eventDateTomorrow));
+
+
+  // Что бы в итоге получилось сначала 4 столбца с датой -
   // в текстовом виде, текуща дата, преобразованная в формат даты и
   // сколько осталось до матча (в часах)
 
@@ -221,6 +271,9 @@ let resultAllBetsArray = [];
   // Тогда сосредоточится на лиге УЕФА - добавить парсер на один или сразу 2 сайта с таблицей результатов
 
   // Также добавить ссылку на ставку, что бы можно было посмотреть результаты
+    // Я буду блокировать интернет-соединение для открытого внутреннего браузера, и нажимать на элементы - они будут
+    // открываться в этом же окне. Они не будут загружаться, но ссылка должна быть корректной
+    // И при переходе на страницу назад, всё сохраняется
 
   // И узнать, сколько по времени длится один матч (и сколько у него частей)
 
@@ -235,9 +288,9 @@ let resultAllBetsArray = [];
   // Записываем в файл
   fs.writeFile('resultAllBetsArray.txt', dataString, 'utf8', (err) => {
     if (err) {
-      console.error('Ошибка при записи в файл', err);
+      console.error('Ошибка при записи в текстовый файл', err);
     } else {
-      console.log('Данные успешно записаны в файл');
+      console.log('Данные успешно записаны в текстовый файл');
     }
   });
 
