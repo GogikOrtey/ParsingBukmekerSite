@@ -221,24 +221,6 @@ let resultAllBetsArray = [];
   // Обработчик даты
   //  
 
-  // function parseEventDate(eventString) {
-  //   const now = moment();
-  //   let eventDate;
-  
-  //   if (eventString.startsWith('Сегодня')) {
-  //     const timePart = eventString.split(' ')[1];
-  //     eventDate = moment(now.format('YYYY-MM-DD') + ' ' + timePart, 'YYYY-MM-DD HH:mm');
-  //   } else if (eventString.startsWith('Завтра')) {
-  //     const timePart = eventString.split(' ')[1];
-  //     const tomorrow = now.clone().add(1, 'days').format('YYYY-MM-DD');
-  //     eventDate = moment(tomorrow + ' ' + timePart, 'YYYY-MM-DD HH:mm');
-  //   }
-  
-  //   return eventDate;
-  // }
-
-  const moment = require('moment');
-
   function parseEventDate(eventString) {
     let eventDate;
   
@@ -269,15 +251,15 @@ let resultAllBetsArray = [];
   
   // Входное время лежит в inputStringDatabet
   
-  inputStringDatabet = "Сегодня в 02:00";
+  inputStringDatabet = "Сегодня в 18:30";
   
-  let currentDate = moment().format('YYYY-MM-DD HH:mm');
+  let currentDate = moment().format('DD-MM-YYYY HH:mm');
   let processingDataBet = parseEventDate(inputStringDatabet);
   let hoursWidthVet = hoursUntilEvent(processingDataBet);
   
   console.log("🕑 Входная строка времени: " + inputStringDatabet);
   console.log("🕑 Текущая дата и время: " + currentDate);
-  console.log("🕑 Обработанное время ставки: " + processingDataBet.format('YYYY-MM-DD HH:mm'));
+  console.log("🕑 Обработанное время ставки: " + processingDataBet.format('DD-MM-YYYY HH:mm'));
   console.log("🕑 Часов до события: " + hoursWidthVet.toFixed(2));
   
 
