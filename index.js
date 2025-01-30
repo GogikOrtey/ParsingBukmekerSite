@@ -313,7 +313,7 @@ let resultAllBetsArray = [];
   // Вытаскивает ссылку на событие, из каждой ставки
   //
 
-  console.log("Начинаем парсинг ссылок событий")
+  
 
   // // Установка слушателя событий для клика мыши
   // await page.exposeFunction('onElementClicked', (className) => {
@@ -336,7 +336,30 @@ let resultAllBetsArray = [];
   // await sleep(5000); // Ждём 5 секунд 
 
 
-  for (let i = 0; i < childDivs.length; i++) {
+
+
+  // !@
+  // Отключаю подключение к интернету во внутреннем браузере
+  console.log("Отключаю подключение к интернету во внутреннем браузере");
+  await page.setRequestInterception(true);
+  page.on('request', interceptedRequest => {
+    // Отклоните все запросы
+    interceptedRequest.abort();
+  });
+
+
+
+  console.log("Начинаем парсинг ссылок событий")
+
+  // console.log("childDivs.length = " + childDivs.length);
+
+  let massChildDivsLength = childDivs.length;
+
+  for (let i = 0; i < massChildDivsLength; i++) {
+    // Каждую итерацию цикла перенахожу элементы-кнопки ставок
+    parentElement = await page.$('[class^="A7vA9"]');
+    childDivs = await parentElement.$$('[class^="Ur2bE"]');
+
     // Получение кнопки внутри текущего элемента
     const button = await childDivs[i].$('div[class^="xLmig"]');
     // const button = await childDivs[i].$('div[class^="Uodqj"]');
@@ -362,17 +385,31 @@ let resultAllBetsArray = [];
         // Добавление текущего URL в массив результатов
         resultAllBetsArray[i].push(page.url());
 
-        // console.log("444");
+        console.log("Сохранили URL " + (i+1) + "й страницы")
+
+        await sleep(2000); ////////////////// для отладки
 
         // Возврат на исходную страницу
         await page.goBack();
 
-        console.log("Ждём 5 секунд");
-        await sleep(5000); // Ждём 5 секунд 
-        break;
+        // console.log("Ждём 5 секунд");
+        // await sleep(50); // Ждём 5 секунд 
+        // break;
+
+        // console.log("childDivs:");
+        // console.log(childDivs);
       }
     }
   }
+
+
+
+  // !@
+  // Восстанавливаю подключение к интернету во внутреннем браузере
+  console.log("Восстанавливаю подключение к интернету во внутреннем браузере");
+  await page.setRequestInterception(false);
+  page.removeAllListeners('request');
+
 
 
 
@@ -380,12 +417,9 @@ let resultAllBetsArray = [];
 
   // Тогда сосредоточится на лиге УЕФА - добавить парсер на один или сразу 2 сайта с таблицей результатов
 
-  // Также добавить ссылку на ставку, что бы можно было посмотреть результаты
-    // Я буду блокировать интернет-соединение для открытого внутреннего браузера, и нажимать на элементы - они будут
-    // открываться в этом же окне. Они не будут загружаться, но ссылка должна быть корректной
-    // И при переходе на страницу назад, всё сохраняется
-
   // И узнать, сколько по времени длится один матч (и сколько у него частей)
+
+  // И добавить сообщения в Тг
 
 
   //
