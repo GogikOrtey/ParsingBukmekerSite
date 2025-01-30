@@ -219,48 +219,67 @@ let resultAllBetsArray = [];
 
   //
   // Обработчик даты
-  //
+  //  
+
+  // function parseEventDate(eventString) {
+  //   const now = moment();
+  //   let eventDate;
+  
+  //   if (eventString.startsWith('Сегодня')) {
+  //     const timePart = eventString.split(' ')[1];
+  //     eventDate = moment(now.format('YYYY-MM-DD') + ' ' + timePart, 'YYYY-MM-DD HH:mm');
+  //   } else if (eventString.startsWith('Завтра')) {
+  //     const timePart = eventString.split(' ')[1];
+  //     const tomorrow = now.clone().add(1, 'days').format('YYYY-MM-DD');
+  //     eventDate = moment(tomorrow + ' ' + timePart, 'YYYY-MM-DD HH:mm');
+  //   }
+  
+  //   return eventDate;
+  // }
+
+  const moment = require('moment');
 
   function parseEventDate(eventString) {
-    const now = moment();
     let eventDate;
-
-    if (eventString.startsWith('Сегодня')) {
-      eventDate = moment(now.format('YYYY-MM-DD') + ' ' + eventString.split(' ')[1], 'YYYY-MM-DD HH:mm');
-    } else if (eventString.startsWith('Завтра')) {
-      eventDate = moment(now.add(1, 'days').format('YYYY-MM-DD') + ' ' + eventString.split(' ')[1], 'YYYY-MM-DD HH:mm');
+  
+    if (eventString.toLowerCase().includes("сегодня")) {
+      eventDate = moment().startOf('day');
+      eventString = eventString.replace(/сегодня/i, '').trim();
+    } else if (eventString.toLowerCase().includes("завтра")) {
+      eventDate = moment().add(1, 'days').startOf('day');
+      eventString = eventString.replace(/завтра/i, '').trim();
+    } else {
+      console.log("Неизвестный формат даты");
     }
-
+  
+    let time = eventString.match(/(\d{1,2}):(\d{2})/);
+    if (time) {
+      eventDate.hour(parseInt(time[1], 10)).minute(parseInt(time[2], 10));
+    } else {
+      console.log("Неверный формат времени");
+    }
+  
     return eventDate;
   }
-
+  
   function hoursUntilEvent(eventDate) {
     const now = moment();
     return eventDate.diff(now, 'hours', true);
   }
-
+  
   // Входное время лежит в inputStringDatabet
-
+  
+  inputStringDatabet = "Сегодня в 02:00";
+  
   let currentDate = moment().format('YYYY-MM-DD HH:mm');
   let processingDataBet = parseEventDate(inputStringDatabet);
   let hoursWidthVet = hoursUntilEvent(processingDataBet);
-
+  
   console.log("🕑 Входная строка времени: " + inputStringDatabet);
   console.log("🕑 Текущая дата и время: " + currentDate);
   console.log("🕑 Обработанное время ставки: " + processingDataBet.format('YYYY-MM-DD HH:mm'));
   console.log("🕑 Часов до события: " + hoursWidthVet.toFixed(2));
-
-  // const eventStringToday = 'Сегодня в 05:30';
-  // const eventStringTomorrow = 'Завтра в 01:00';
-
-  // const eventDateToday = parseEventDate(eventStringToday);
-  // const eventDateTomorrow = parseEventDate(eventStringTomorrow);
-
-  // console.log('Точная дата события "Сегодня в 05:30":', eventDateToday.format('YYYY-MM-DD HH:mm'));
-  // console.log('Часов до события "Сегодня в 05:30":', hoursUntilEvent(eventDateToday));
-
-  // console.log('Точная дата события "Завтра в 01:00":', eventDateTomorrow.format('YYYY-MM-DD HH:mm'));
-  // console.log('Часов до события "Завтра в 01:00":', hoursUntilEvent(eventDateTomorrow));
+  
 
 
   // Что бы в итоге получилось сначала 4 столбца с датой -
