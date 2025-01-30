@@ -67,8 +67,27 @@ let resultAllBetsArray = [];
   // console.log("Ждём 5 секунд");
   // await sleep(5000); // Ждём 5 секунд 
 
-  await page.waitForSelector('[class^="Ur2bE"]');
-  console.log("Хотя бы один нужный элемент загрузился");
+  try {
+    // Пытаемся дождаться элемента в течение 10 секунд
+    await page.waitForSelector('[class^="Ur2bE"]', { timeout: 12000 });
+
+  } catch (error) {
+    console.log('Элемент не найден в течение 12 секунд.');
+
+    // Проверяем наличие элемента с текстом "Ошибка загрузки данных"
+    const isErrorElementPresent = await page.evaluate(() => {
+      const errorElement = document.querySelector('[class^="QUM9B"]');
+      return errorElement && errorElement.textContent.includes('Ошибка загрузки данных');
+    });
+
+    if (isErrorElementPresent) {
+      console.log('Ошибка загрузки данных, программа завершает работу с ошибкой');
+      await browser.close();
+      return;
+    } 
+  }
+
+  console.log("Хотя бы один нужный элемент загрузился, идём дальше");
 
   // Поиск и клик по кнопке с текстом "1д"
   await page.evaluate(() => {
@@ -250,8 +269,6 @@ let resultAllBetsArray = [];
   }
   
   // Входное время лежит в inputStringDatabet
-  
-  inputStringDatabet = "Сегодня в 18:30";
   
   let currentDate = moment().format('DD-MM-YYYY HH:mm');
   let processingDataBet = parseEventDate(inputStringDatabet);
