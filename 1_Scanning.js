@@ -259,7 +259,7 @@ function enableInternet() {
     // Выполняем код по раскрытию списков, для всех свёрнутых элементов, за исключением первого,
     // т.к. первый уже раскрыт
     if (arrCounterArrDown > 1) {
-      if (arrCounterArrDown > 5) break; ///////////////// Открываем только 2 первых списков. Потом убрать этот код
+      if (arrCounterArrDown > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
 
       await element.evaluate(el => {
         el.scrollIntoView();
@@ -512,6 +512,24 @@ function enableInternet() {
   
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   console.log("Начинаем парсинг ссылок событий")
 
   let arrCounterArrDown_onParsLink = 1; // Счётчик того, на каком конкретно мы сейчас сипске <-- Это надо потом заменить на another_i
@@ -520,18 +538,34 @@ function enableInternet() {
 
   let elArrowDown_length = elements_arrow_down.length;
 
+
+
+
+
+
+
   // Идём по всем спискам
   for (let another_i = 0; another_i < elArrowDown_length; another_i++) {
 
+    if (arrCounterArrDown_onParsLink > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
+
+    massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
+    parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
+    childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
+
     let massChildDivsLength = childDivs.length;
 
-    // Идём по всем кнопкам ставок внутри одно списка
+    console.log("Количество ставок в этом списке = " + massChildDivsLength);
+
+    // Идём по всем кнопкам ставок внутри одного списка
     for (let i = 0; i < massChildDivsLength; i++) {
 
       if(arrCounterArrDown_onParsLink == 1)
       {
         // Если мы разбираем первый список, то его раскрывать не нужно
         // После перезагрузки страницы, он раскрыт автоматически
+
+        console.log("Обрабатываем список 1, раскрыте не требуется");
       } else {
         // Однако, если мы работаем с другими списками, то его нужно развернуть:
 
@@ -575,24 +609,42 @@ function enableInternet() {
         }
       }
 
+      await sleep(500);
+
       // Каждую итерацию цикла перенахожу элементы-кнопки ставок
       // parentElement = await page.$('[class^="A7vA9"]');
-      childDivs = await parentElement.$$('[class^="Ur2bE"]');
+      massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
+      parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
+      childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
 
       // Получение кнопки внутри текущего элемента
       const button = await childDivs[i].$('div[class^="xLmig"]');
+      const selectedEl = await childDivs[i].$('div[class^="Uodqj"]');
+
+      console.log("Кнопка ставки, на которую будем нажимать:");
+      console.log(button);
+      console.log(".");
 
       // // Прокрутка до этого элемента
       // button.scrollIntoView(); 
 
+
+
+
       if (button) {
-        // Прокрутка к элементу
+        // Прокрутка к элементу плавно
         await page.evaluate(element => {
-          element.scrollIntoView({ block: 'center' });
+          element.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }, button);
+
 
         // Получение размера и положения элемента
         const boundingBox = await button.boundingBox();
+
+        // Добавляем красную рамку
+        await page.evaluate(element => {
+          element.style.border = '2px solid red'; 
+        }, selectedEl);
 
         if (boundingBox) {
           // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
@@ -602,8 +654,16 @@ function enableInternet() {
           // Сохраняем текущий URL страницы
           const currentURL = page.url();
 
+          console.log("Задержка перед кликом");
+          await sleep(5000); // это убрать
+
           // Выполнение клика по вычисленным координатам
           await page.mouse.click(clickX, clickY);
+
+          // Убираем красную рамку
+          await page.evaluate(element => {
+            element.style.border = '';
+          }, selectedEl);
 
           // Ожидание изменения URL
           await page.waitForFunction(`window.location.href !== '${currentURL}'`);
@@ -615,13 +675,19 @@ function enableInternet() {
 
           // await sleep(5000); ////////////////// для отладки
 
-          await sleep(3000);
+          console.log("Задержка перед возвратом");
+
+          await sleep(5000); // 300
 
           // Возврат на исходную страницу
           await page.goBack();
 
-          await sleep(3000);
+          await sleep(5000); // 300
+
+          console.log("Выполняем код дальше");
         }
+      } else {
+        console.log("Ошибка с кнопкой ставки!");
       }
     }
 
