@@ -457,12 +457,44 @@ function enableInternet() {
   // Вытаскивает ссылку на событие, из каждой ставки
   //
 
+
+
+
+  
+
   // Выключает интернет
   // disableInternet();
 
-  console.log("🔴🔴🔴 Отключай интернет!");
-  await sleep(3500);
+  const client = await page.target().createCDPSession();
+  await client.send('Network.enable');
 
+  console.log("Инициализирую отключение интернета");
+
+  // Отключение интернета
+  await client.send('Network.emulateNetworkConditions', {
+    offline: true,
+    latency: 0,
+    downloadThroughput: 0,
+    uploadThroughput: 0
+  });
+
+  // Выполнение действий без интернета
+  // ...
+
+
+
+  // Продолжение обработки
+
+
+  // console.log("🔴🔴🔴 Отключай интернет!");
+  // await sleep(3500);
+
+
+  console.log("Задержка после отключения интернета");
+  await sleep(30010); 
+
+  // Выполнение клика по вычисленным координатам
+  console.log("Продолжение программы после отключения интернета и задержки в 30 секунд");
 
 
   // Завтра:
@@ -535,6 +567,8 @@ function enableInternet() {
   let arrCounterArrDown_onParsLink = 0; // Счётчик того, на каком конкретно мы сейчас сипске <-- Это надо потом заменить на another_i
 
   elements_arrow_down = await page.$$('[class^="h4qas"]');
+
+  console.log("Продолжение программы после выполнения запроса в браузере");
 
   let elArrowDown_length = elements_arrow_down.length;
 
@@ -611,93 +645,124 @@ function enableInternet() {
 
       await sleep(500);
 
-      // Каждую итерацию цикла перенахожу элементы-кнопки ставок
-      // parentElement = await page.$('[class^="A7vA9"]');
-      massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
-      parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
-      childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
+      // let retry = true;
+      // let countErrors = 0;
 
-      // Получение кнопки внутри текущего элемента
-      const button = await childDivs[i].$('div[class^="xLmig"]');
-      const selectedEl = await childDivs[i].$('div[class^="Uodqj"]');
+      // while (retry) {
+        // try {
 
-      // console.log("Кнопка ставки, на которую будем нажимать:");
-      // console.log(button);
-      // console.log(".");
+          // Каждую итерацию цикла перенахожу элементы-кнопки ставок
+          // parentElement = await page.$('[class^="A7vA9"]');
+          massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
+          parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
+          childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
 
-      // // Прокрутка до этого элемента
-      // button.scrollIntoView(); 
+          // Получение кнопки внутри текущего элемента
+          const button = await childDivs[i].$('div[class^="xLmig"]');
+          const selectedEl = await childDivs[i].$('div[class^="Uodqj"]');
+
+          // console.log("Кнопка ставки, на которую будем нажимать:");
+          // console.log(button);
+          // console.log(".");
+
+          // // Прокрутка до этого элемента
+          // button.scrollIntoView(); 
 
 
-      try {
 
-        if (button) {
-          // Прокрутка к элементу
-          await page.evaluate(element => {
-            // element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            element.scrollIntoView({ block: 'center' });
-          }, button);
-
-          // Добавляем красную рамку
-          await page.evaluate(element => {
-            element.style.border = '2px solid red';
-          }, selectedEl);
-
-          // Получение размера и положения элемента
-          const boundingBox = await button.boundingBox();
-
-          if (boundingBox) {
-            // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
-            const clickX = boundingBox.x + 100;
-            const clickY = boundingBox.y + (boundingBox.height / 2);
-
-            // Сохраняем текущий URL страницы
-            const currentURL = page.url();
-
-            console.log("Задержка перед кликом");
-            await sleep(2000); // это убрать
-
-            // Выполнение клика по вычисленным координатам
-            console.log("Выполнение клика");
-            await page.mouse.click(clickX, clickY);
-            console.log("Клик выполнен");
-
-            // Убираем красную рамку
+          if (button) {
+            // Прокрутка к элементу
             await page.evaluate(element => {
-              element.style.border = '';
+              // element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+              element.scrollIntoView({ block: 'center' });
+            }, button);
+
+            // Добавляем красную рамку
+            await page.evaluate(element => {
+              element.style.border = '2px solid red';
             }, selectedEl);
 
-            // Ожидание изменения URL
-            await page.waitForFunction(`window.location.href !== '${currentURL}'`);
+            // Получение размера и положения элемента
+            // const boundingBox = await button.boundingBox();
 
-            // Добавление текущего URL в массив результатов
-            resultAllBetsArray[i].push(page.url());
+            // if (boundingBox) {
+              // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
+              // const clickX = boundingBox.x + 100;
+              // const clickY = boundingBox.y + (boundingBox.height / 2);
 
-            console.log("Сохранили URL " + (i + 1) + "й страницы")
+              // Сохраняем текущий URL страницы
+              const currentURL = page.url();
 
-            // await sleep(5000); ////////////////// для отладки
+              console.log("Задержка перед кликом");
+              await sleep(2000); // это убрать
 
-            console.log("Задержка перед возвратом");
+              // Выполнение клика по вычисленным координатам
+              console.log("Выполнение клика");
+              // await page.mouse.click(clickX, clickY);
+              // await button.click();
 
-            await sleep(2000); // 300
 
-            // Возврат на исходную страницу
-            await page.goBack();
+              const offsetX = -10; // Сдвиг по X (левее на 10 пикселей)
+              const offsetY = 0;  // Сдвиг по Y (без изменения)
+              
+              const boundingBox = await button.boundingBox();
+              
+              if (boundingBox) {
+                const clickX = boundingBox.width / 2 + offsetX;
+                const clickY = boundingBox.height / 2 + offsetY;
+              
+                await button.click({
+                  offset: {
+                    x: clickX,
+                    y: clickY
+                  }
+                });           
+              }   
 
-            await sleep(2000); // 300
 
-            console.log("Выполняем код дальше");
+              console.log("Клик выполнен");
 
-          } else {
-            console.log("Ошибка с boundingBox!");
+              // Убираем красную рамку
+              await page.evaluate(element => {
+                element.style.border = '';
+              }, selectedEl);
+
+              // Ожидание изменения URL
+              await page.waitForFunction(`window.location.href !== '${currentURL}'`);
+
+              // Добавление текущего URL в массив результатов
+              resultAllBetsArray[i].push(page.url());
+
+              console.log("Сохранили URL " + (i + 1) + "й страницы")
+
+              // await sleep(5000); ////////////////// для отладки
+
+              console.log("Задержка перед возвратом");
+
+              await sleep(2000); // 300
+
+              // Возврат на исходную страницу
+              await page.goBack();
+
+              await sleep(2000); // 300
+
+              console.log("Выполняем код дальше");
+
+              // retry = false; // Успешное выполнение, прекращаем повторные попытки
+            // }
           }
-        } else {
-          console.log("Ошибка с кнопкой ставки!");
-        }
-      } catch (error) {
-        console.error("Произошла ошибка при выполнении клика:", error);
+        // } catch (error) {
+        //   console.error("Произошла ошибка при выполнении клика:", error);
+        //   // console.log("При выполнении клика снова произошла ошибка, но мы её игнорируем");
+        //   // retry = true;
+        //   // countErrors++;
+        //   // if(countErrors > 10) {
+        //   //   console.error("Произошла невероятно важная и неисправимая ошибка, при выполнении клика:", error);
+        //   //   // break;
+        //   // }
+        // }
       }
-    }
+    // }
 
     arrCounterArrDown_onParsLink++;
   }
@@ -711,6 +776,17 @@ function enableInternet() {
 
   console.log("> Включай интернет!");
   // await sleep(2500);
+
+
+
+  // Включение интернета обратно
+  await client.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 0,
+    downloadThroughput: 100 * 1024 * 1024 / 8, // 100Mbps
+    uploadThroughput: 100 * 1024 * 1024 / 8 // 100Mbps
+  });
+
 
 
   // Включает интернет
