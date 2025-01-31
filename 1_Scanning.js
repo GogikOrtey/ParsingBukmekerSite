@@ -232,7 +232,7 @@ function enableInternet() {
   await page.waitForSelector('[class^="h4qas"]');
 
   // Получение всех элементов с классом 'h4qas-a84e8c10'
-  const elements_arrow_down = await page.$$('[class^="h4qas"]');
+  let elements_arrow_down = await page.$$('[class^="h4qas"]');
 
   let arrCounterArrDown = 1;
 
@@ -249,12 +249,17 @@ function enableInternet() {
   let inputStringDatabet;
   let childDivs;
   
+  // Этот цикл идёт по всем спискам, и раскрывает их
   for (const element of elements_arrow_down) {
     
+    // // Каждую итерацию заново сканируем страницу на наличие элементов раскрытия списка
+    // // т.к. после перезагрузки они выгружаются
+    // elements_arrow_down = await page.$$('[class^="h4qas"]');
+
     // Выполняем код по раскрытию списков, для всех свёрнутых элементов, за исключением первого,
     // т.к. первый уже раскрыт
     if (arrCounterArrDown > 1) {
-      if (arrCounterArrDown > 2) break; ///////////////// Открываем только 2 первых списков. Потом убрать этот код
+      if (arrCounterArrDown > 5) break; ///////////////// Открываем только 2 первых списков. Потом убрать этот код
 
       await element.evaluate(el => {
         el.scrollIntoView();
@@ -505,62 +510,128 @@ function enableInternet() {
   // А дальше - проектировать и обучать нейросеть
 
   
-  
+
 
   console.log("Начинаем парсинг ссылок событий")
 
-  let massChildDivsLength = childDivs.length;
+  let arrCounterArrDown_onParsLink = 1; // Счётчик того, на каком конкретно мы сейчас сипске <-- Это надо потом заменить на another_i
 
-  for (let i = 0; i < massChildDivsLength; i++) {
-    // Каждую итерацию цикла перенахожу элементы-кнопки ставок
-    parentElement = await page.$('[class^="A7vA9"]');
-    childDivs = await parentElement.$$('[class^="Ur2bE"]');
+  elements_arrow_down = await page.$$('[class^="h4qas"]');
 
-    // Получение кнопки внутри текущего элемента
-    const button = await childDivs[i].$('div[class^="xLmig"]');
+  let elArrowDown_length = elements_arrow_down.length;
 
-    // // Прокрутка до этого элемента
-    // button.scrollIntoView(); 
+  // Идём по всем спискам
+  for (let another_i = 0; another_i < elArrowDown_length; another_i++) {
 
-    if (button) {
-      // Прокрутка к элементу
-      await page.evaluate(element => {
-        element.scrollIntoView({ block: 'center' });
-      }, button);
+    let massChildDivsLength = childDivs.length;
 
-      // Получение размера и положения элемента
-      const boundingBox = await button.boundingBox();
+    // Идём по всем кнопкам ставок внутри одно списка
+    for (let i = 0; i < massChildDivsLength; i++) {
 
-      if (boundingBox) {
-        // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
-        const clickX = boundingBox.x + 100;
-        const clickY = boundingBox.y + (boundingBox.height / 2);
+      if(arrCounterArrDown_onParsLink == 1)
+      {
+        // Если мы разбираем первый список, то его раскрывать не нужно
+        // После перезагрузки страницы, он раскрыт автоматически
+      } else {
+        // Однако, если мы работаем с другими списками, то его нужно развернуть:
 
-        // Сохраняем текущий URL страницы
-        const currentURL = page.url();
+        //
+        // Разворачиваем текущий список
+        //
 
-        // Выполнение клика по вычисленным координатам
-        await page.mouse.click(clickX, clickY);
+        // Ещё раз получаем все стрелки раскрытия списков
+        elements_arrow_down = await page.$$('[class^="h4qas"]');
 
-        // Ожидание изменения URL
-        await page.waitForFunction(`window.location.href !== '${currentURL}'`);
+        // await element.evaluate(el => {
+        //   el.scrollIntoView();
+        //   el.style.border = '2px solid red'; // Добавляем красную рамку
+        // });
 
-        // Добавление текущего URL в массив результатов
-        resultAllBetsArray[i].push(page.url());
+        // Получаем корректную ссылку на текущий список, который надо раскрыть
+        element = elements_arrow_down[arrCounterArrDown_onParsLink];
+  
+        await element.evaluate(el => {
+          el.scrollIntoView();
+          window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
+        });
+        // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
+  
+  
+        // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
+        parentElement = await element.evaluateHandle(el => {
+          return el.closest('[class^="A7vA9"]');
+        });
+  
+        if (parentElement) {
+          await element.click();
+          // console.log("Нажали на элемент раскрытия списка");
+  
+          // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
+          await page.waitForFunction(parent => {
+            return parent.querySelector('[class^="Ur2bE"]') !== null;
+          }, { timeout: 5000 }, parentElement);
+  
+          console.log("Список №" + arrCounterArrDown_onParsLink + " корректно раскрылся");
+        }
+      }
 
-        console.log("Сохранили URL " + (i+1) + "й страницы")
+      // Каждую итерацию цикла перенахожу элементы-кнопки ставок
+      // parentElement = await page.$('[class^="A7vA9"]');
+      childDivs = await parentElement.$$('[class^="Ur2bE"]');
 
-        // await sleep(5000); ////////////////// для отладки
+      // Получение кнопки внутри текущего элемента
+      const button = await childDivs[i].$('div[class^="xLmig"]');
 
-        await sleep(300);
+      // // Прокрутка до этого элемента
+      // button.scrollIntoView(); 
 
-        // Возврат на исходную страницу
-        await page.goBack();
+      if (button) {
+        // Прокрутка к элементу
+        await page.evaluate(element => {
+          element.scrollIntoView({ block: 'center' });
+        }, button);
 
-        await sleep(300);
+        // Получение размера и положения элемента
+        const boundingBox = await button.boundingBox();
+
+        if (boundingBox) {
+          // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
+          const clickX = boundingBox.x + 100;
+          const clickY = boundingBox.y + (boundingBox.height / 2);
+
+          // Сохраняем текущий URL страницы
+          const currentURL = page.url();
+
+          // Выполнение клика по вычисленным координатам
+          await page.mouse.click(clickX, clickY);
+
+          // Ожидание изменения URL
+          await page.waitForFunction(`window.location.href !== '${currentURL}'`);
+
+          // Добавление текущего URL в массив результатов
+          resultAllBetsArray[i].push(page.url());
+
+          console.log("Сохранили URL " + (i + 1) + "й страницы")
+
+          // await sleep(5000); ////////////////// для отладки
+
+          await sleep(3000);
+
+          // Возврат на исходную страницу
+          await page.goBack();
+
+          await sleep(3000);
+        }
       }
     }
+
+    arrCounterArrDown_onParsLink++;
   }
+
+
+
+
+
 
 
 
