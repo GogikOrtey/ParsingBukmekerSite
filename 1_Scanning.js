@@ -509,6 +509,15 @@ function enableInternet() {
 
 
 
+
+
+
+
+
+
+
+
+
   console.log("Начинаем парсинг ссылок событий")
 
 
@@ -520,6 +529,9 @@ function enableInternet() {
   
   // Был ли этот список уже открыт один раз?
   let onseListOpened = false;
+
+  // Порядковый номер, для корректного сохранения ссылки в массив
+  let ordinalNumber = 0;
 
 
   // Идём по всем спискам
@@ -645,9 +657,10 @@ function enableInternet() {
         await page.waitForFunction(`window.location.href !== '${currentURL}'`);
 
         // Добавление текущего URL в массив результатов
-        resultAllBetsArray[i].push(page.url());
+        resultAllBetsArray[ordinalNumber].push(page.url());
+        ordinalNumber++;
 
-        console.log("Сохранили URL " + (i + 1) + "й страницы ставки")
+        console.log("Сохранили URL " + (i + 1) + "й страницы ставки, с порядковым номером " + ordinalNumber);
 
         // await sleep(5000); ////////////////// для отладки
 
