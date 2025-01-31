@@ -480,7 +480,30 @@ function enableInternet() {
 
 
   
+  // Эта функция открывает список
+  async function ListOpened() {
+    // Ещё раз получаем все стрелки раскрытия списков
+    elements_arrow_down = await page.$$('[class^="h4qas"]');
 
+    // Получаем корректную ссылку на текущий список, который надо раскрыть
+    element = elements_arrow_down[arrCounterArrDown_onParsLink];
+
+    await element.evaluate(el => {
+      el.scrollIntoView();
+      window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
+    });
+
+    if (parentElement) {
+      await element.click();
+
+      // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
+      await page.waitForFunction(parent => {
+        return parent.querySelector('[class^="Ur2bE"]') !== null;
+      }, { timeout: 5000 }, parentElement);
+
+      console.log("Список №" + arrCounterArrDown_onParsLink + " корректно раскрылся");
+    }
+  }
 
 
 
@@ -504,38 +527,18 @@ function enableInternet() {
 
     if (arrCounterArrDown_onParsLink > 4) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
 
-    // massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
-    // parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
-    // childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
+
 
     console.log("Начинаем обработку списка со ставками №" + arrCounterArrDown_onParsLink);
 
     // Раскрываем обрабатываемый список:
-    // Вот этот ко точно нужно будет свернуть ///////////////////////////// <--
+    // Вот этот код точно нужно будет свернуть ///////////////////////////// <--
 
     // Если это не первый список
     if (arrCounterArrDown_onParsLink > 0) {
-      // Ещё раз получаем все стрелки раскрытия списков
-      elements_arrow_down = await page.$$('[class^="h4qas"]');
-
-      // Получаем корректную ссылку на текущий список, который надо раскрыть
-      element = elements_arrow_down[arrCounterArrDown_onParsLink];
-
-      await element.evaluate(el => {
-        el.scrollIntoView();
-        window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
-      });
-
-      if (parentElement) {
-        await element.click();
-
-        // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
-        await page.waitForFunction(parent => {
-          return parent.querySelector('[class^="Ur2bE"]') !== null;
-        }, { timeout: 5000 }, parentElement);
-
-        console.log("Список №" + arrCounterArrDown_onParsLink + " корректно раскрылся");
-      }
+      
+      // Раскрываем этот список
+      await ListOpened();
 
       onseListOpened = true; 
     }
@@ -545,18 +548,9 @@ function enableInternet() {
 
 
 
-
     massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
-
     parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
-
-    console.log("parentElement:");
-    console.log(parentElement);
-
     childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
-
-    console.log("childDivs:");
-    console.log(childDivs);
 
     let massChildDivsLength = childDivs.length;
 
@@ -585,60 +579,17 @@ function enableInternet() {
           // Разворачиваем текущий список
           //
 
-          // Ещё раз получаем все стрелки раскрытия списков
-          elements_arrow_down = await page.$$('[class^="h4qas"]');
-
-          // Получаем корректную ссылку на текущий список, который надо раскрыть
-          element = elements_arrow_down[arrCounterArrDown_onParsLink];
-
-          await element.evaluate(el => {
-            el.scrollIntoView();
-            window.scrollBy(0, -300); // Прокрутка на 300 пикселей выше
-          });
-          // console.log("Прокрутка до элемента раскрытия списка № " + arrCounterArrDown);    
-
-          // // Находим родительский элемент с классом .A7vA9-a84e8c10 до клика
-          // parentElement = await element.evaluateHandle(el => {
-          //   return el.closest('[class^="A7vA9"]');
-          // });
-
-          if (parentElement) {
-            // if(vsfvjnsjfns == false) vsfvjnsjfns = true 
-            // else await element.click();
-            await element.click();
-            // console.log("Нажали на элемент раскрытия списка");
-
-            // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
-            await page.waitForFunction(parent => {
-              return parent.querySelector('[class^="Ur2bE"]') !== null;
-            }, { timeout: 5000 }, parentElement);
-
-            console.log("Список №" + arrCounterArrDown_onParsLink + " корректно раскрылся");
-
-            // await sleep(10000); 
-          }
+          await ListOpened();
+          
         } else {
           onseListOpened = false;
         }
       }
 
-      // // Каждую итерацию цикла перенахожу элементы-кнопки ставок
-      // massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
-      // parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
-      // childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
-
       // Каждую итерацию цикла перенахожу элементы-кнопки ставок
       massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
-
       parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
-
-      console.log("parentElement:");
-      console.log(parentElement);
-
       childDivs = await parentElement.$$('[class^="Ur2bE"]');           // Все ставки в этом списке
-
-      console.log("childDivs:");
-      console.log(childDivs);
 
 
       // Получение кнопки внутри текущего элемента
@@ -700,12 +651,8 @@ function enableInternet() {
 
         // await sleep(5000); ////////////////// для отладки
 
-        // await sleep(350); 
-
         // Возврат на исходную страницу
         await page.goBack();
-
-        // await sleep(350); 
 
         console.log("Выполняем код дальше");
       }
