@@ -296,6 +296,16 @@ function enableInternet() {
       parentElement = await page.$('[class^="A7vA9"]');
     }
 
+    let nameOfLiga = await page.evaluate((element) => {
+      return element.getAttribute('data-at-name');
+    }, parentElement);
+
+    // nameOfLiga = nameOfLiga.substring(4);
+    nameOfLiga = nameOfLiga.split(' ').slice(1).join(' ');
+
+
+
+
 
 
 
@@ -311,6 +321,8 @@ function enableInternet() {
   
     for (const div of childDivs) {
       let info = [];
+
+      info.push(nameOfLiga);
 
       // Извлекаем первый элемент span с классом rzys6-a84e8c10
       const spans = await div.$$('[class^="rzys6"]');
@@ -409,7 +421,7 @@ function enableInternet() {
 
 
   for (let i = 0; i < resultAllBetsArray.length; i++) {
-    let cur_inputStringDatabet = resultAllBetsArray[i][2];
+    let cur_inputStringDatabet = resultAllBetsArray[i][3];
 
     let currentDate = moment().format('DD-MM-YYYY HH:mm');
     let processingDataBet = parseEventDate(cur_inputStringDatabet);
@@ -428,10 +440,10 @@ function enableInternet() {
   //
 
   for (let i = 0; i < resultAllBetsArray.length; i++) {
-    for(let j = 3; j < 6; j++) {
+    for(let j = 4; j < 7; j++) {
       resultAllBetsArray[i][j] = resultAllBetsArray[i][j].replace(".", ",")
     }
-    resultAllBetsArray[i][8] = resultAllBetsArray[i][8].replace(".", ",")
+    resultAllBetsArray[i][9] = resultAllBetsArray[i][9].replace(".", ",")
   }
 
 
