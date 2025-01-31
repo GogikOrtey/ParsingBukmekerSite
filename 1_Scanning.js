@@ -532,7 +532,7 @@ function enableInternet() {
 
   console.log("Начинаем парсинг ссылок событий")
 
-  let arrCounterArrDown_onParsLink = 1; // Счётчик того, на каком конкретно мы сейчас сипске <-- Это надо потом заменить на another_i
+  let arrCounterArrDown_onParsLink = 0; // Счётчик того, на каком конкретно мы сейчас сипске <-- Это надо потом заменить на another_i
 
   elements_arrow_down = await page.$$('[class^="h4qas"]');
 
@@ -547,7 +547,7 @@ function enableInternet() {
   // Идём по всем спискам
   for (let another_i = 0; another_i < elArrowDown_length; another_i++) {
 
-    if (arrCounterArrDown_onParsLink > 5) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
+    if (arrCounterArrDown_onParsLink > 4) break; ///////////////// Открываем только 5 первых списков. Потом убрать этот код
 
     massParentElement = await page.$$('[class^="A7vA9"]');            // Массив, содержащий все списки
     parentElement = massParentElement[arrCounterArrDown_onParsLink];  // Получаем текущий список
@@ -560,7 +560,7 @@ function enableInternet() {
     // Идём по всем кнопкам ставок внутри одного списка
     for (let i = 0; i < massChildDivsLength; i++) {
 
-      if(arrCounterArrDown_onParsLink == 1)
+      if(arrCounterArrDown_onParsLink == 0)
       {
         // Если мы разбираем первый список, то его раскрывать не нужно
         // После перезагрузки страницы, он раскрыт автоматически
@@ -621,73 +621,81 @@ function enableInternet() {
       const button = await childDivs[i].$('div[class^="xLmig"]');
       const selectedEl = await childDivs[i].$('div[class^="Uodqj"]');
 
-      console.log("Кнопка ставки, на которую будем нажимать:");
-      console.log(button);
-      console.log(".");
+      // console.log("Кнопка ставки, на которую будем нажимать:");
+      // console.log(button);
+      // console.log(".");
 
       // // Прокрутка до этого элемента
       // button.scrollIntoView(); 
 
 
+      try {
 
-
-      if (button) {
-        // Прокрутка к элементу плавно
-        await page.evaluate(element => {
-          element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }, button);
-
-
-        // Получение размера и положения элемента
-        const boundingBox = await button.boundingBox();
-
-        // Добавляем красную рамку
-        await page.evaluate(element => {
-          element.style.border = '2px solid red'; 
-        }, selectedEl);
-
-        if (boundingBox) {
-          // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
-          const clickX = boundingBox.x + 100;
-          const clickY = boundingBox.y + (boundingBox.height / 2);
-
-          // Сохраняем текущий URL страницы
-          const currentURL = page.url();
-
-          console.log("Задержка перед кликом");
-          await sleep(5000); // это убрать
-
-          // Выполнение клика по вычисленным координатам
-          await page.mouse.click(clickX, clickY);
-
-          // Убираем красную рамку
+        if (button) {
+          // Прокрутка к элементу
           await page.evaluate(element => {
-            element.style.border = '';
+            // element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            element.scrollIntoView({ block: 'center' });
+          }, button);
+
+          // Добавляем красную рамку
+          await page.evaluate(element => {
+            element.style.border = '2px solid red';
           }, selectedEl);
 
-          // Ожидание изменения URL
-          await page.waitForFunction(`window.location.href !== '${currentURL}'`);
+          // Получение размера и положения элемента
+          const boundingBox = await button.boundingBox();
 
-          // Добавление текущего URL в массив результатов
-          resultAllBetsArray[i].push(page.url());
+          if (boundingBox) {
+            // Вычисление координат клика (100 пикселей справа и по центру по вертикали)
+            const clickX = boundingBox.x + 100;
+            const clickY = boundingBox.y + (boundingBox.height / 2);
 
-          console.log("Сохранили URL " + (i + 1) + "й страницы")
+            // Сохраняем текущий URL страницы
+            const currentURL = page.url();
 
-          // await sleep(5000); ////////////////// для отладки
+            console.log("Задержка перед кликом");
+            await sleep(2000); // это убрать
 
-          console.log("Задержка перед возвратом");
+            // Выполнение клика по вычисленным координатам
+            console.log("Выполнение клика");
+            await page.mouse.click(clickX, clickY);
+            console.log("Клик выполнен");
 
-          await sleep(5000); // 300
+            // Убираем красную рамку
+            await page.evaluate(element => {
+              element.style.border = '';
+            }, selectedEl);
 
-          // Возврат на исходную страницу
-          await page.goBack();
+            // Ожидание изменения URL
+            await page.waitForFunction(`window.location.href !== '${currentURL}'`);
 
-          await sleep(5000); // 300
+            // Добавление текущего URL в массив результатов
+            resultAllBetsArray[i].push(page.url());
 
-          console.log("Выполняем код дальше");
+            console.log("Сохранили URL " + (i + 1) + "й страницы")
+
+            // await sleep(5000); ////////////////// для отладки
+
+            console.log("Задержка перед возвратом");
+
+            await sleep(2000); // 300
+
+            // Возврат на исходную страницу
+            await page.goBack();
+
+            await sleep(2000); // 300
+
+            console.log("Выполняем код дальше");
+
+          } else {
+            console.log("Ошибка с boundingBox!");
+          }
+        } else {
+          console.log("Ошибка с кнопкой ставки!");
         }
-      } else {
-        console.log("Ошибка с кнопкой ставки!");
+      } catch (error) {
+        console.error("Произошла ошибка при выполнении клика:", error);
       }
     }
 
