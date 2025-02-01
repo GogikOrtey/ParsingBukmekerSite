@@ -26,7 +26,7 @@ let resultAllBetsArray = [];
 
 // Ограничение на количество обработанных списков
 // Если = 0, то без ограничения
-const limitOfProcess = 1; 
+const limitOfProcess = 12; 
 
 // Мы закрываем окно браузера, после завершения скрипта?
 const bool_isClosetBrowserAfterEndingOfScript = true;
@@ -298,7 +298,7 @@ if(bool_isClosetBrowserAfterEndingOfScript == true) {
         // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
         await page.waitForFunction(parent => {
           return parent.querySelector('[class^="Ur2bE"]') !== null;
-        }, { timeout: 5000 }, parentElement);
+        }, { timeout: 30000 }, parentElement);
 
         // console.log("Внутренние элементы корректно загрузились");
       }
@@ -510,7 +510,7 @@ if(bool_isClosetBrowserAfterEndingOfScript == true) {
       // Ожидаем появления элемента с классом .Ur2bE-a84e8c10 внутри найденного родительского элемента
       await page.waitForFunction(parent => {
         return parent.querySelector('[class^="Ur2bE"]') !== null;
-      }, { timeout: 5000 }, parentElement);
+      }, { timeout: 30000 }, parentElement);
 
       console.log("Список №" + arrCounterArrDown_onParsLink + " корректно раскрылся");
     }
@@ -590,7 +590,7 @@ if(bool_isClosetBrowserAfterEndingOfScript == true) {
 
       // Ждём загрузки хотя бы одного нужного нам элемента
       // Это маркер того, что страница корректно загрузилась
-      await page.waitForSelector('[class^="h4qas"]', { timeout: 5000 });
+      await page.waitForSelector('[class^="h4qas"]', { timeout: 30000 });
       await sleep(350); 
 
       if(arrCounterArrDown_onParsLink == 0)
