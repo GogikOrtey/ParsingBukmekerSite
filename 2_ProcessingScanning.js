@@ -30,6 +30,7 @@ const path = require('path');
 
 
 
+
 // Открываем пространство асинхронного выполнения кода
 // т.е. только последовательного:
 (async () => {
@@ -54,7 +55,7 @@ const path = require('path');
             console.log(`Время выполнения сканирования: ${duration.toFixed(0)} секунд`);
         }
 
-        await SaveLogsFromTxtFile();
+        await SaveLogsFromTxtFile(stdout, stderr, duration);
 
     } catch (error) {
         console.error(`exec error: ${error}`);
@@ -65,7 +66,7 @@ const path = require('path');
 
 
     // Сохраняет логи в текстовый файл, в папку Logs
-    async function SaveLogsFromTxtFile() {
+    async function SaveLogsFromTxtFile(stdout, stderr, duration) {
         // Берём текущую дату
         const now = new Date();
         // Заменяем : на символы ⁚
@@ -100,11 +101,7 @@ const path = require('path');
 
 
 
-
-
 })();
-
-
 
 
 
