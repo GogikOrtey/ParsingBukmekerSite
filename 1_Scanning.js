@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const xlsx = require('xlsx');
 const moment = require('moment');
+const { error } = require('console');
 
 
 // Открытие сайта:
@@ -25,7 +26,7 @@ let resultAllBetsArray = [];
 
 // Ограничение на количество обработанных списков
 // Если = 0, то без ограничения
-const limitOfProcess = 3; 
+const limitOfProcess = 1; 
 
 // Мы закрываем окно браузера, после завершения скрипта?
 const bool_isClosetBrowserAfterEndingOfScript = true;
@@ -190,9 +191,7 @@ if(bool_isClosetBrowserAfterEndingOfScript == true) {
   // Открываем указанную страницу и ждем полной загрузки
   await page.goto('https://betboom.ru/sport/football', { waitUntil: 'load' });
 
-  console.log("Запуск программы")
-
-
+  console.log("Запуск программы");
 
   // Ожидание загрузки элемента 
   // await page.waitForSelector('button.zcABw-a84e8c10.mXIwY-a84e8c10');

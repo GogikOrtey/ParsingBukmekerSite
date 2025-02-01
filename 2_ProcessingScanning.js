@@ -1,6 +1,8 @@
 const { promisify } = require('util');
 const { exec } = require('child_process');
 const execPromise = promisify(exec);
+const fs = require('fs');
+const path = require('path');
 
 
 /*                                ОПИСАНИЕ:
@@ -52,9 +54,54 @@ const execPromise = promisify(exec);
             console.log(`Время выполнения сканирования: ${duration.toFixed(0)} секунд`);
         }
 
+        await SaveLogsFromTxtFile();
+
     } catch (error) {
         console.error(`exec error: ${error}`);
     }
+
+    // Вот здесь 5 раз пробовать ещё раз запустить этот скрипт, если он звершается с ошибкой
+
+
+
+    // Сохраняет логи в текстовый файл, в папку Logs
+    async function SaveLogsFromTxtFile() {
+        // Берём текущую дату
+        const now = new Date();
+        // Заменяем : на символы ⁚
+        const formattedDate = now.toLocaleString('ru-RU', { hour12: false }).replace(/:/g, '⁚');
+        const logDir = path.join(__dirname, 'Logs');
+
+        // Создаём папку Logs, если её нет
+        if (!fs.existsSync(logDir)) {
+            fs.mkdirSync(logDir);
+        }
+
+        // Устанавливаем имя и путь для создания этого файла
+        const logFileName = `LoadingLog_${formattedDate}.txt`;
+        const logFilePath = path.join(logDir, logFileName);
+
+        const logData = `
+        Сканирование завершено: 1_Scanning.js завершился
+        Лог этого скрипта: ${stdout}
+        ${stderr ? `Ошибки этого скрипта: ${stderr}` : ''}
+        
+        Время выполнения сканирования: ${duration > 120 ? (duration / 60).toFixed(1) + 
+        ' минут' : duration.toFixed(0) + ' секунд'}
+        `;
+
+        // Записываем лог в файл
+        fs.writeFileSync(logFilePath, logData.trim());
+
+        console.log(`Лог сохранён в файл: ${logFilePath}`);
+    }
+
+
+
+
+
+
+
 })();
 
 
@@ -76,7 +123,7 @@ const execPromise = promisify(exec);
 
 
 
-// Проверить на обработку ошибок
+
 
 // Добавить выгрузку логов в текстовый файл, каждый раз
 
